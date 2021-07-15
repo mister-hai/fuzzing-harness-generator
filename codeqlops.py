@@ -1,10 +1,4 @@
-import os
-
-def writecodeqlfile(filetowrite):
-    os.open()
-
-
-scanoperation = dict
+scanoperation = dict()
 
 scanoperation({'multiargfunc' : '''import cpp
 
