@@ -1,5 +1,8 @@
 # AutoHarness
 ##### Created by Akshat Parikh
+##### Refactored by mister hai of the church of the subhacker
+NOW WITH OOP .. and comments!!
+PEP8 semi-compliant, also!
 ***
 ## What is this tool?
 AutoHarness is a tool that automatically generates fuzzing harnesses for you. This idea stems from a concurrent problem in fuzzing codebases today: large codebases have thousands of functions and pieces of code that can be embedded fairly deep into the library. It is very hard or sometimes even impossible for smart fuzzers to reach that codepath. 
@@ -30,9 +33,8 @@ The current way implemented in the program to fuzz functions with multiple argum
 Using codeql, it is possible to use to generate a control flow graph that maps how the parameters in a function are initialized. Using that information, we can create a better harness. Another way is to look for implementations for the function that exist in the library and use that information to make an educated guess on an implementation of the function as a harness. The problems I currently have with this are generating the control flow graphs with codeql.
 
 3. ### Parallelized fuzzing/False Positive Detection
-I can create a simple program that runs all the harnesses and picks up on any of the common false positives using ASAN. Also, I can create a new interface that runs all the harnesses at once and displays their statistics.
 ## Contribution/Bugs
-If you find any bugs with this program, please create an issue. I will try to come up with a fix. Also, if you have any ideas on any new features or how to implement performance upgrades or the current planned features, please create a pull request or an issue with the tag (contribution).
+    dont bother, fork it and hack on it. This one is for me and my own
 ## PSA
 This tool generates some false positives. Please first analyze the crashes and see if it is valid bug or if it is just an implementation bug. Also, you can enable the debug mode if some functions are not compiling. This will help you understand if there are some header files that you are missing or any linkage issues. If the project you are working on does not have shared libraries but an executable, make sure to compile the executable in PIE form so that this program can convert it into a shared library.
 ## References
