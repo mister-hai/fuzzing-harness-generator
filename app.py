@@ -101,7 +101,7 @@ parser.add_argument('--detection',
                         help = "'headers' to Auto-detect headers \n\
                             'functions' for function definitions? what is this dogin?.", required=True)
 arguments = parser.parse_args()
-
+ 
 ('-L', '--library',  "Specify directory to program's libraries")
 ('-C', '--ql',  "Specify directory of codeql modules, database, and binary")
 ('-D', '--database',  "Specify Codeql database")
