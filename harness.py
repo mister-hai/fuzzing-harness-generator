@@ -184,6 +184,10 @@ General Usage:
                 self.queryoutputfilename,
                 self.codeqloutputdir)
 
+    def bqrsinfo(self):
+        command = "codeql bqrs decode --format=csv {} onearg.bqrs -o {bqrsoutput} {outputcsvfile}"
+        pass
+
     def findsharedobject(self):
         ''''''
         for filename in os.listdir(self.projectroot):
@@ -206,10 +210,6 @@ General Usage:
             self.defined_functions   = {"function":[], "type":[],"object": [],"type_or_loc":[]}
             self.elf_functions       = {"function":[], "type":[],"object": [],"type_or_loc":[]}
             self.shared_functions    = {"function":[], "type":[],"object": [],"type_or_loc":[]}
-
-    def bqrsinfo(self):
-        command = "codeql bqrs decode --format=csv {} onearg.bqrs -o {bqrsoutput} {outputcsvfile}"
-        pass
 
     def picker(self,outputlocation):
         data = pd.read_csv(outputlocation)
