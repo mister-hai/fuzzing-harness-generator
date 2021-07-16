@@ -6,14 +6,16 @@ General Usage:
         info: number of inputs per whatever, I dunno figure this shit out
     
     param: detectmode
-        type:
-        info:
+        type:CSV string
+        info: headers,sharedobjects,source,functions,
     
     param: maxtreads
         type: int
         info: number of threads to use for scanning
+        default: 4
     
-    Load up bpython (seriously)
+
+step 1:    Load up bpython (seriously)
 
 >>> pip3 install bpython; python3 -m bpython
 >>> #load the scanner

@@ -92,7 +92,7 @@ parser.add_argument('--debug',
                         dest = 'debug',
                         action  = "store_true",
                         default = False ,
-                        help = "display debugging information"
+                        help = "display debugging information \n DEFAULT: On"
                         )
 parser.add_argument('--detection', 
                         dest = 'detection',

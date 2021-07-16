@@ -26,6 +26,7 @@ scanning file
 ################################################################################
 import cpp
 import lief
+import glob
 import sys,os
 import subprocess
 import pandas as pd
@@ -35,6 +36,7 @@ from os import _exit as exit
 from ast import literal_eval
 from signal import SIGINT, signal
 from subprocess import DEVNULL, STDOUT
+
 print("[+] Basic imports completed")
 
 ################################################################################
@@ -57,36 +59,50 @@ class Scanner(object):
     '''
     {docs}
     '''.format(docs = __SCANNER__)
+    def __cls__(cls):
+        pass
+
     def __init__(self,detectmode:str,maxthreads:int):#,arguments):
         #limit it to 4 please
         self.maxthreads             = maxthreads        
         self.multiharness           = True
-        self.detectionmode          = detectmode
+        # csv list of detection items
+        self.detectionmode          = detectmode.split(',')
         #A list of the operations available in the codeqlops.py file
         self.codeqloperationslist = scanoperation.keys()        
         self.cwd = lambda : os.getcwd()
 
         self.mapdependencies = True
         self.dependancymapping = {}
+
         #this is the file representation we pack into 
         # one new one per item found matching spec
         self.sharedobjectpile = {}
+        self.sharedobjectfunctions = {}
 
-        if self.detectionmode == 'headers':
-            self.manageheaders()
+        #self.manageheaders()
+
         # make a harness for every function/file/object
         # mass enumeration of vulnerabilities
         # very CPU intensive
-        if self.multiharness == False:
+        if self.multiharness == True:
             pass
+    
+    def scanprojectroot(self):
+        '''
+        Scans the project directory for the designated files
+        '''
+
+        sofiles = glob.glob(self.projectroot + "/**/*.so", recursive = True)
+        #if headers only
+        if 'headers' in self.detectionmode:
+            headers = glob.glob(self.projectroot + "/**/*.h", recursive = True)
+        #os.listdir(self.projectroot):
 
     def findsharedobject(self):
         '''
         setter method for the .so files found by the scanner
         '''
-            #0x0000000000000001 (NEEDED)             Shared library: [libz.so.1]
-            #0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]
-            #0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
         for filename in os.listdir(self.projectroot):
             #uses the linux command 
             # `file`
@@ -95,7 +111,7 @@ class Scanner(object):
                 newsharedobject = SharedObject(filename= filename)
                 self.sharedobjectspile[filename] = newsharedobject
     
-    def listsharedobjects(self):
+    def listsharedobjectskeys(self):
         '''
         lister method for the .so files scanned by the tool
 
@@ -108,7 +124,7 @@ class Scanner(object):
                 returnpile.append(returnkeys)
             return returnpile
 
-    def getsharedobject(self,itemkey):
+    def getsharedobjectbykey(self,itemkey):
         '''
         getter method for .so files scanned by the tool
         '''
@@ -122,8 +138,8 @@ class Scanner(object):
         '''
         .so parsing
         '''
-        for sharedobject in self.sharedobjectspile    
-        pass
+        for sharedobject in self.sharedobjectspile:
+            pass
 
     def readelf(self):
         '''
@@ -131,11 +147,12 @@ class Scanner(object):
 
         Uses `readelf` from standard linux utilities
 
+        Stores the parsed data as thus:
+            {filename : readelf(data)}
         '''
-        for sharedobject in self.sharedobjectspile.keys():
-            readelf(self.sharedobjectspile[sharedobject])
-            self.object_functions["output"] = readelf
-            self.object_functions["object"] = sharedobject
+        for objectname, sharedobject in self.sharedobjectspile.keys():
+            elfinformation = readelf(self.sharedobjectspile[sharedobject])
+            self.sharedobjectfunctions[objectname] = elfinformation
 
 
     def readheaders(self):
