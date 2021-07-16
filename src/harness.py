@@ -35,92 +35,42 @@ from os import _exit as exit
 from ast import literal_eval
 from signal import SIGINT, signal
 from subprocess import DEVNULL, STDOUT
-from codeqlops import scanoperation
-from util import errormessage,greenprint,blueprint,redprint
 print("[+] Basic imports completed")
 
+################################################################################
+##############                  LOCAL IMPORTS                  #################
+################################################################################
+from codeqlops import scanoperation
 
-class SharedObject(object):
-    '''
-    This is a representation of a file
-    '''
-    def __init__(self):
-        self.defined_functions = {
-            'function'   : [],
-            'type'       : [],
-            'object'     : [],
-            'type_or_loc': []
-            }
-        self.object_functions = {
-            "output"     :[],
-            "object"     :[]
-            }
-        self.elf_functions     = {
-            "function"   : [],
-            "type"       : [],
-            "object"     : [],
-            "type_or_loc": []
-            }
-        self.shared_functions  = {
-            "function"   : [],
-            "type"       : [],
-            "object"     : [],
-            "type_or_loc": []
-            }
-        self.total_functions  = {
-            "function"   :[], 
-            "type"       :[],
-            "type_or_loc":[]
-            }
+from util import errormessage,greenprint,blueprint,redprint,rreplace
+from util import filescan,readelf
+
+from SharedObject import SharedObject
+from Header import Header
+
+from DOCS.docs import *
 ################################################################################
 ##############                  CODE SCANNER                   #################
 ################################################################################
 
 class Scanner(object):
-    '''Performs a scan of the requested resource
-General Usage:
-    
-    param : arglen
-        type: int
-        info: number of inputs per whatever, I dunno figure this shit out
-    
-    param: detectmode
-        type:
-        info:
-    
-    param: maxtreads
-        type: int
-        info: number of threads to use for scanning
-    
-    Load up bpython (seriously)
-
->>> pip3 install bpython; python3 -m bpython
->>> #load the scanner
->>> scanmodule = Scanner()
->>> #root the scanner in place
->>> scanmodule.rootinplace()
->>> scanmodule.scancode()
->>> scanmodule.genharness()
-
     '''
-    def __init__(self,detectmode:str, arglen:int, maxthreads:int):#,arguments):
+    {docs}
+    '''.format(docs = __SCANNER__)
+    def __init__(self,detectmode:str,maxthreads:int):#,arguments):
         #limit it to 4 please
         self.maxthreads             = maxthreads        
         self.multiharness           = True
-        self.projectroot            = "./input_source_code"
-        self.codeqlroot             = "./codeql/"
-        self.harnessoutputdirectory = "./harnesses/"
-        self.codeqloutputdir        = "./codeqloutput/"
-        self.bqrsoutputdirectory    = "./bqrsfiles/"
-        self.oneargoutputname       = "onearg.csv"
         self.detectionmode          = detectmode
         #A list of the operations available in the codeqlops.py file
         self.codeqloperationslist = scanoperation.keys()        
         self.cwd = lambda : os.getcwd()
 
+        self.mapdependencies = True
+        self.dependancymapping = {}
         #this is the file representation we pack into 
         # one new one per item found matching spec
-        self.sharedobject = SharedObject()
+        self.sharedobjectpile = {}
 
         if self.detectionmode == 'headers':
             self.manageheaders()
@@ -129,82 +79,69 @@ General Usage:
         # very CPU intensive
         if self.multiharness == False:
             pass
-    def rootinplace(self):
-        '''establishes this scripts operating location and relative code locations'''
-        self.env = [self.projectroot,
-                    self.codeqlroot,
-                    self.harnessoutputdirectory,
-                    self.codeqloutputdir,
-                    self.bqrsoutputdirectory,
-                    self.oneargoutputname,
-                    self.detectionmode
-                    ]
-        self.setenv(self.env)
-
-    def setenv(self, installdirs:list):
-        '''sets the PATH variables for operation'''
-        try:
-            #validation for future expansions
-            if len(installdirs) > 1:
-                #make the installation directories
-                for projectdirectory in installdirs:
-                    os.makedirs(projectdirectory, exist_ok=False)
-                #set path to point to those directories
-                os.environ["PATH"] += os.pathsep + os.pathsep.join(installdirs)
-        except Exception:
-            errormessage("[-] Failure to set Environment, Check Your Permissions Schema")
-
-    def rreplace(self, s, old, new, occurrence):
-        '''copied from somewhere
-        string replacment inline'''
-        li = s.rsplit(old, occurrence)
-        return new.join(li)
-
-    def writecodeql(self,codename:str):
-        '''writes the requested codeql block to file for execution
-        currently supported operations are as follows
-        {}
-        '''.format(self.codeqloperationslist)
-        name = scanoperation[codename]
-        data = scanoperation['filedata']
-        filehandle = open(name)
-        filehandle.write(data)
-        filehandle.close()
-
-    def makedirs():
-        '''
-        makes directories for project
-        '''
-        pass
-    
-    def codeqlquery(self,query):
-        self.queryoutputfilename = lambda filename: '{}.bqrs'.format(filename)
-        self.codeqlquery = 'codeql query run {} -o {} {} -d {}'.format( 
-                query,
-                self.queryoutputfilename,
-                self.codeqloutputdir)
-
-    def bqrsinfo(self):
-        command = "codeql bqrs decode --format=csv {} onearg.bqrs -o {bqrsoutput} {outputcsvfile}"
-        pass
 
     def findsharedobject(self):
-        ''''''
+        '''
+        setter method for the .so files found by the scanner
+        '''
+            #0x0000000000000001 (NEEDED)             Shared library: [libz.so.1]
+            #0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]
+            #0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
         for filename in os.listdir(self.projectroot):
-            if "shared object" in subprocess.run(["file", filename], stdout=subprocess.PIPE).stdout.decode('utf-8'):
+            #uses the linux command 
+            # `file`
+            if "shared object" in filescan(filename):
                 greenprint("Found shared object " + filename)
-                self.shared_objects.append(filename)
+                newsharedobject = SharedObject(filename= filename)
+                self.sharedobjectspile[filename] = newsharedobject
+    
+    def listsharedobjects(self):
+        '''
+        lister method for the .so files scanned by the tool
+
+        returns an array of keys
+        '''
+        if len(self.sharedobjectspile) != 0:
+            returnkeys = self.sharedobjectspile.keys()
+            returnpile = []
+            for each in returnkeys:
+                returnpile.append(returnkeys)
+            return returnpile
+
+    def getsharedobject(self,itemkey):
+        '''
+        getter method for .so files scanned by the tool
+        '''
+        if itemkey in dir(self.sharedobjectspile):
+            return self.sharedobjectpile[itemkey]
+        else:
+            KeyError
+
+
+    def readsharedobject(self):
+        '''
+        .so parsing
+        '''
+        for sharedobject in self.sharedobjectspile    
+        pass
 
     def readelf(self):
-        ''''''
-        for object in self.shared_objects:
-            readelf = subprocess.run("readelf", "-a",object, stdout=subprocess.PIPE).stdout.decode('utf-8')
-            self.object_functions["output"].append(readelf)
-            self.object_functions["object"].append(object)
+        '''
+        ELF parsing
+
+        Uses `readelf` from standard linux utilities
+
+        '''
+        for sharedobject in self.sharedobjectspile.keys():
+            readelf(self.sharedobjectspile[sharedobject])
+            self.object_functions["output"] = readelf
+            self.object_functions["object"] = sharedobject
 
 
-    def manageheaders(self):
-            self.scanner.shared_objects = []
+    def readheaders(self):
+        '''
+        .h parsing
+        '''
             self.object_functions    = {"output":[],"object":[]}
             self.total_functions     = {"function":[], "type":[],"type_or_loc":[]}
             self.defined_functions   = {"function":[], "type":[],"object": [],"type_or_loc":[]}
@@ -212,18 +149,13 @@ General Usage:
             self.shared_functions    = {"function":[], "type":[],"object": [],"type_or_loc":[]}
 
     def picker(self,outputlocation):
+        '''
+        pick apart the loaded file for the scanner to scan
+        '''
         data = pd.read_csv(outputlocation)
         total_functions["function"] = list(data.f)
         total_functions["type"] = list(data.t)
         total_functions["type_or_loc"] = list(data.g)
-
-    def parseobject(self):
-        '''parses the currently loaded object file
-    - extract the following items
-        - functions
-        - function type?
-        - 
-'''
         for index, define in enumerate(self.object_functions["output"]):
             for index2, function in enumerate(total_functions["function"]):
                 if (str(function) in define):
@@ -231,6 +163,7 @@ General Usage:
                     self.defined_functions["type"].append(total_functions["type"][index2])
                     self.defined_functions["object"].append(self.object_functions["object"][index])
                     self.defined_functions["type_or_loc"].append(total_functions["type_or_loc"][index2])
+
         for i in range(len(defined_functions["function"])):
             if ".so" not in str(defined_functions["object"][i]):
                 elf = lief.parse(self.projectroot + str(defined_functions["object"][i]))

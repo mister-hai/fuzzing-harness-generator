@@ -34,6 +34,7 @@ import logging
 import pkgutil
 import inspect
 import hashlib
+import subprocess
 import traceback
 from pathlib import Path
 from datetime import date
@@ -77,15 +78,19 @@ makeyellow        = lambda text: Fore.YELLOW + ' ' +  text + ' ' + Style.RESET_A
 makered           = lambda text: Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
 makegreen         = lambda text: Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
 makeblue          = lambda text: Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-debugmessage     = lambda message: logger.debug(blueprint(message)) 
-info_message      = lambda message: logger.info(greenprint(message))   
-warning_message   = lambda message: logger.warning(yellowboldprint(message)) 
-error_message     = lambda message: logger.error(redprint(message)) 
+debugmessage     = lambda message: logger.debug(makeblue(message)) 
+info_message      = lambda message: logger.info(makegreen(message))   
+warning_message   = lambda message: logger.warning(makeyellow(message)) 
+error_message     = lambda message: logger.error(makered(message)) 
 critical_message  = lambda message: logger.critical(yellowboldprint(message))
  
 gzcompress = lambda inputdata: {"data" : gzip.compress(inputdata)}
 
 scanfilesbyextension = lambda directory,extension: [f for f in os.listdir(directory) if f.endswith(extension)]
+
+filescan = lambda filename: subprocess.run(["file", filename], stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+readelf = lambda elfobject: subprocess.run("readelf", "-a",object, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
 greenprint("[+] Variables Set!")
 ################################################################################
@@ -190,3 +195,10 @@ def sha512(bytearray:bytes,encoding =  "utf-8"):
     herp = hashlib.sha512()
     herp.update(bytearray)
     return herp.digest()
+
+def rreplace(s, old, new, occurrence):
+    '''copied from somewhere
+    string replacment inline'''
+    li = s.rsplit(old, occurrence)
+    return new.join(li)
+

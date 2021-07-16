@@ -116,20 +116,80 @@ arguments = parser.parse_args()
 ###############################################################################
 try:
     arguments = parser.parse_args()
-    #dataframe.columns = ['channel','time','sender','content','file']
-    #listofpandascolumns = ['channel', 'sender', 'time', 'content','file']
-    if len(arguments.token) == 0:
+    if arguments.config == True:
         config = configparser.ConfigParser()
         codeqllocation = config['DEFAULT']['codeql']
-    elif len(arguments.token) == 59:
-        if arguments.gzipenabled:
-            codeqllocation  = arguments.codeqllocation 
+        projectroot            = config['DEFAULT']['projectroot']
+        codeqlroot             = config['DEFAULT']['codeqlroot']
+        harnessoutputdirectory = config['DEFAULT']['harnessoutputdirectory']
+        codeqloutputdir        = config['DEFAULT']['codeqloutputdir']
+        bqrsoutputdirectory    = config['DEFAULT']['bqrsoutputdirectory']
+        oneargoutputname       = config['DEFAULT']['oneargoutputname']
+    elif arguments.config == False:
+        projectroot            = arguments.projectroot
+        codeqlroot             = arguments.codeqlroot
+        harnessoutputdirectory = arguments.harnessoutputdirectory
+        codeqloutputdir        = arguments.codeqloutputdir
+        bqrsoutputdirectory    = arguments.bqrsoutputdirectory
+        oneargoutputname       = arguments.oneargoutputname
+ 
+
+
+
 
 except Exception:
     errormessage("[-] Configuation File could not be parsed!")
     sys.exit(1)
 
 greenprint("[+] Loaded Commandline Arguments")
+
+def rootinplace():
+    '''establishes this scripts operating location and relative code locations'''
+    env = [projectroot,
+           codeqlroot,
+           harnessoutputdirectory,
+           codeqloutputdir,
+           bqrsoutputdirectory,
+           oneargoutputname,
+           detectionmode
+           ]
+    self.setenv(self.env)
+
+def setenv(self, installdirs:list):
+    '''sets the PATH variables for operation'''
+    try:
+        #validation for future expansions
+        if len(installdirs) > 1:
+            #make the installation directories
+            for projectdirectory in installdirs:
+                os.makedirs(projectdirectory, exist_ok=False)
+            #set path to point to those directories
+            os.environ["PATH"] += os.pathsep + os.pathsep.join(installdirs)
+    except Exception:
+        errormessage("[-] Failure to set Environment, Check Your Permissions Schema")
+
+def rreplace(s, old, new, occurrence):
+    '''copied from somewhere
+    string replacment inline'''
+    li = s.rsplit(old, occurrence)
+    return new.join(li)
+
+def makedirs():
+    '''
+    makes directories for project
+    '''
+    pass
+    
+def codeqlquery(self,query):
+    self.queryoutputfilename = lambda filename: '{}.bqrs'.format(filename)
+    self.codeqlquery = 'codeql query run {} -o {} {} -d {}'.format( 
+            query,
+            self.queryoutputfilename,
+            self.codeqloutputdir)
+
+def bqrsinfo():
+    command = "codeql bqrs decode --format=csv {} onearg.bqrs -o {bqrsoutput} {outputcsvfile}"
+
 
 if __name__ == '__main__':
     scanmodule = Scanner()

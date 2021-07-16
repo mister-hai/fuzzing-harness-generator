@@ -1,3 +1,4 @@
+
 scanoperation = dict()
 
 scanoperation({'multiargfunc' : '''import cpp
@@ -68,3 +69,16 @@ where
 	t = v.getType().toString()
 select f, t, g
 '''})
+
+
+def writecodeql(self,codename:str):
+    '''writes the requested codeql block to file for execution
+    currently supported operations are as follows
+    {}
+    '''.format(scanoperation.keys())
+    name = scanoperation[codename]
+    data = scanoperation['filedata']
+    filehandle = open(name)
+    filehandle.write(data)
+    filehandle.close()
+
