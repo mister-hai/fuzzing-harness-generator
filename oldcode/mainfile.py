@@ -31,7 +31,11 @@ if (int(args.mode) == 0):
     cwd = os.getcwd()
     if int(args.detection) == 0:
         subprocess.check_output("cp " + cwd + "/onearglocation.ql " + args.ql, shell=True)
-        subprocess.check_output("cd "+ args.ql + ";" +args.ql+ "codeql query run onearglocation.ql -o " + args.output + "onearg.bqrs -d " + args.ql + args.database +";" + args.ql + "codeql bqrs decode --format=csv " + args.output + "onearg.bqrs -o " + args.output + "onearg.csv", shell=True)
+        "/media/moop/53EB92C60DE44CA5/programming/repositories/fuzzing-harness-generator/"
+        "codeql database create --language=C --source-root=./lib testdb.db"
+        "codeql query run ./oldcode/oneargfunc.ql --output=./output/test.bqrs"
+        "codeql query run onearglocation.ql -o ./output/testonearg.bqrs -d ./testdb"
+        "codeql bqrs decode --format=csv ./output/testoutput.csv onearg.bqrs -o " + args.output + "onearg.csv", shell=True)
     elif int(args.detection) == 1:
        subprocess.check_output("cp " + cwd + "/oneargfunc.ql " + args.ql, shell=True)
        subprocess.check_output("cd "+ args.ql + ";" +args.ql+ "codeql query run oneargfunc.ql -o " + args.output + "onearg.bqrs -d " + args.ql + args.database +";" + args.ql + "codeql bqrs decode --format=csv " + args.output + "onearg.bqrs -o " + args.output + "onearg.csv", shell=True)

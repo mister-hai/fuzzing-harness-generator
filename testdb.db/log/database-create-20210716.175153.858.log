@@ -1,0 +1,19 @@
+[2021-07-16 17:51:53] This is codeql database create --language=c --source-root=./lib testdb.db
+[2021-07-16 17:51:53] Log file was started late.
+[2021-07-16 17:51:53] [PROGRESS] database create> Initializing database at /media/moop/53EB92C60DE44CA5/programming/repositories/fuzzing-harness-generator/testdb.db.
+[2021-07-16 17:51:53] Running plumbing command: codeql database init --language=c --source-root=/media/moop/53EB92C60DE44CA5/programming/repositories/fuzzing-harness-generator/lib --allow-missing-source-root=false --allow-already-existing -- /media/moop/53EB92C60DE44CA5/programming/repositories/fuzzing-harness-generator/testdb.db
+[2021-07-16 17:51:53] [PROGRESS] database init> Resolving extractor c.
+[2021-07-16 17:51:53] Calling plumbing command: codeql resolve languages --format=json
+[2021-07-16 17:51:53] [DETAILS] resolve languages> Scanning for codeql-extractor.yml from /media/moop/53EB92C60DE44CA5/programming/Python/share/codeql/.codeqlmanifest.json
+[2021-07-16 17:51:54] Plumbing command codeql resolve languages completed:
+                      { }
+[2021-07-16 17:51:54] Exception caught at top level: There's no CodeQL extractor named 'c' installed.
+                      com.semmle.cli2.database.InitCommand.initOneDatabase(InitCommand.java:204)
+                      com.semmle.cli2.database.InitCommand.executeSubcommand(InitCommand.java:144)
+                      com.semmle.cli2.picocli.PlumbingRunner.run(PlumbingRunner.java:110)
+                      com.semmle.cli2.picocli.SubcommandCommon.runPlumbingInProcess(SubcommandCommon.java:159)
+                      com.semmle.cli2.database.CreateCommand.executeSubcommand(CreateCommand.java:72)
+                      com.semmle.cli2.picocli.SubcommandCommon.call(SubcommandCommon.java:448)
+                      com.semmle.cli2.picocli.SubcommandMaker.runMain(SubcommandMaker.java:205)
+                      com.semmle.cli2.picocli.SubcommandMaker.runMain(SubcommandMaker.java:214)
+                      com.semmle.cli2.CodeQL.main(CodeQL.java:98)

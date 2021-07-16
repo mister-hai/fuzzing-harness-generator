@@ -73,24 +73,30 @@ script_osdir        = Path(__file__).parent.absolute()
 redprint          = lambda text: print(Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 blueprint         = lambda text: print(Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 greenprint        = lambda text: print(Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-yellowboldprint = lambda text: print(Fore.YELLOW + Style.BRIGHT + ' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+yellowboldprint   = lambda text: print(Fore.YELLOW + Style.BRIGHT + ' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 makeyellow        = lambda text: Fore.YELLOW + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else text
 makered           = lambda text: Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
 makegreen         = lambda text: Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
 makeblue          = lambda text: Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-debugmessage     = lambda message: logger.debug(makeblue(message)) 
+debugmessage      = lambda message: logger.debug(makeblue(message)) 
 info_message      = lambda message: logger.info(makegreen(message))   
 warning_message   = lambda message: logger.warning(makeyellow(message)) 
 error_message     = lambda message: logger.error(makered(message)) 
 critical_message  = lambda message: logger.critical(yellowboldprint(message))
- 
+
+'''uses `readelf` to read a file'''
+readelf = lambda elfobject: subprocess.run("readelf", "-a",object, stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+'''uses `file` to check the provided file '''
+filescan = lambda filename: subprocess.run(["file", filename], stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+'''checks if input is a def'''
+is_method = lambda func: inspect.getmembers(func, predicate=inspect.ismethod)
+
+'''returns a dict'''
 gzcompress = lambda inputdata: {"data" : gzip.compress(inputdata)}
 
 scanfilesbyextension = lambda directory,extension: [f for f in os.listdir(directory) if f.endswith(extension)]
-
-filescan = lambda filename: subprocess.run(["file", filename], stdout=subprocess.PIPE).stdout.decode('utf-8')
-
-readelf = lambda elfobject: subprocess.run("readelf", "-a",object, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
 greenprint("[+] Variables Set!")
 ################################################################################
